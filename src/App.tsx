@@ -1,3 +1,6 @@
+// App.tsx
+import './polyfill.js'; // Add this import at the very top
+
 import { AccountsContextProvider } from './accounts/AccountsContext';
 import './App.css';
 import { AccountsPage } from './pages/Accounts';
