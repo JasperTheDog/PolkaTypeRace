@@ -85,3 +85,11 @@
   opacity: 0;
   pointer-events: none;
 }
+
+.correct-char {
+  color: green;
+  background-color: rgb(175, 255, 175);
+}
+.incorrect-char {
+  color: black;
+}
