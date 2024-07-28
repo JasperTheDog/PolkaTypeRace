@@ -1,11 +1,15 @@
 // App.tsx
 import './polyfill.js'; // Add this import at the very top
-
-import { AccountsContextProvider } from './accounts/AccountsContext';
-import './App.css';
-import { AccountsPage } from './pages/Accounts';
-import { SdkProvider } from './sdk/SdkContext';
-import { SignByLocalSignerModalProvider } from './signModal/SignByLocalSignerModalContext';
+import { useContext } from "react";
+import {
+  AccountsContextProvider,
+  AccountsContext,
+} from "./accounts/AccountsContext";
+import "./App.css";
+import { AccountsPage } from "./pages/Accounts";
+import { RacecarPage } from "./pages/Racecar";
+import { SdkProvider } from "./sdk/SdkContext";
+import { SignByLocalSignerModalProvider } from "./signModal/SignByLocalSignerModalContext";
 
 function App() {
   return (
@@ -13,11 +17,25 @@ function App() {
       <SdkProvider>
         <SignByLocalSignerModalProvider>
           <AccountsContextProvider>
-            <AccountsPage />
+            <AppContent />
           </AccountsContextProvider>
         </SignByLocalSignerModalProvider>
       </SdkProvider>
     </div>
+  );
+}
+
+function AppContent() {
+  const { accounts } = useContext(AccountsContext);
+
+  if (accounts.size === 0) {
+    return <AccountsPage />; // Replace this with your actual sign-in button
+  }
+
+  return (
+    <>
+      <RacecarPage />
+    </>
   );
 }
 
