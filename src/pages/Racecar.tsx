@@ -7,6 +7,7 @@ import {
   AccountsContext,
 } from "../accounts/AccountsContext";
 import { incrementWinnerToken } from "../accounts/AccountsContext";
+import { BeatLoader } from "react-spinners";
 
 import { Link } from "react-router-dom"; // Import Link from react-router-dom
 

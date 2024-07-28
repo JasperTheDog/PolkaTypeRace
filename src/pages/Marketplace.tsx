@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"; // Import Link from react-router-dom
 import "./styles.css"; // Ensure this path is correct
 import { AccountsContext } from "../accounts/AccountsContext";
 import { Address } from "@unique-nft/sdk/utils";
+import { changeAttribute } from "../utils/change-attribute.js";
 
 export const Marketplace: React.FC = () => {
   const [userName, setUserName] = useState("");
@@ -90,7 +91,8 @@ export const Marketplace: React.FC = () => {
     carsCollectionId: number,
     achievementsCollectionId: number,
     owner: string,
-    imageUrl: string
+    imageUrl: string,
+    price: number
   ) {
     console.log(imageUrl);
     console.log("Creating fireIceWind token for owner:", owner);
@@ -153,80 +155,69 @@ export const Marketplace: React.FC = () => {
   }
 
   return (
-    <div className="game-container">
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-        }}
-      >
-        <div className="title-container">
-          <img
-            src="/polkaTypeRacer.png"
-            alt="Racecar"
-            className="racecar-image"
-            style={{ width: "250px", height: "250px" }}
-          />
-          <h1>Polka Type Race</h1>
-        </div>
-        <div>
-          <p>User Trophies: {userTrophies}</p>
-        </div>
-        <div style={{ display: "flex", marginBottom: "20px" }}>
-          <div style={{ marginRight: "20px", textAlign: "center" }}>
-            <h3>Word Scorcher</h3>
-            <img
-              src="/fire.png"
-              alt="Fire"
-              style={{ width: "100px", height: "100px" }}
-            />
-            <p>Price: 1 trophy</p>
-            <button
-              onClick={() =>
-                createTokenFireWindIce(3416, 3419, userId, "/fire.png")
-              }
-            >
-              Create Fire Token
-            </button>
-          </div>
-          <div style={{ marginRight: "20px", textAlign: "center" }}>
-            <h3>Gust of Distraction</h3>
-            <img
-              src="/wind.png"
-              alt="Wind"
-              style={{ width: "100px", height: "100px" }}
-            />
-            <p>Price: 2 trophies</p>
-            <button
-              onClick={() =>
-                createTokenFireWindIce(3416, 3419, userId, "/wind.png")
-              }
-            >
-              Create Wind Token
-            </button>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <h3>Freeze Frame</h3>
-            <img
-              src="/ice.png"
-              alt="Ice"
-              style={{ width: "100px", height: "100px" }}
-            />
-            <p>Price: 3 trophies</p>
-            <button
-              onClick={() =>
-                createTokenFireWindIce(3416, 3419, userId, "/ice.png")
-              }
-            >
-              Create Ice Token
-            </button>
-          </div>
-        </div>
-        <Link to="/">Go back to Accounts</Link>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+      }}
+    >
+      <div>
+        <p>User Trophies: {userTrophies}</p>
       </div>
+      <div style={{ display: "flex", marginBottom: "20px" }}>
+        <div style={{ marginRight: "20px", textAlign: "center" }}>
+          <h3>Word Scorcher</h3>
+          <img
+            src="/fire.png"
+            alt="Fire"
+            style={{ width: "100px", height: "100px" }}
+          />
+          <p>Price: 1 trophy</p>
+          <button
+            onClick={() =>
+              createTokenFireWindIce(3416, 3419, userId, "/fire.png")
+            }
+          >
+            Create Fire Token
+          </button>
+        </div>
+        <div style={{ marginRight: "20px", textAlign: "center" }}>
+          <h3>Gust of Distraction</h3>
+          <img
+            src="/wind.png"
+            alt="Wind"
+            style={{ width: "100px", height: "100px" }}
+          />
+          <p>Price: 2 trophies</p>
+          <button
+            onClick={() =>
+              createTokenFireWindIce(3416, 3419, userId, "/wind.png")
+            }
+          >
+            Create Wind Token
+          </button>
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <h3>Freeze Frame</h3>
+          <img
+            src="/ice.png"
+            alt="Ice"
+            style={{ width: "100px", height: "100px" }}
+          />
+          <p>Price: 3 trophies</p>
+          <button
+            onClick={() =>
+              createTokenFireWindIce(3416, 3419, userId, "/ice.png")
+            }
+          >
+            Create Ice Token
+          </button>
+        </div>
+      </div>
+      <Link to="/">Go back to Accounts</Link>
     </div>
   );
 };
