@@ -39,7 +39,7 @@ export async function incrementWinnerToken(
   const { account, sdk } = await connectSdk();
   const tokens = await sdk.token.accountTokens({
     address: owner,
-    collectionId: 3231,
+    collectionId: 3416,
   });
 
   let winnerTokenId: number;
@@ -60,24 +60,32 @@ export async function incrementWinnerToken(
   const transactions = [];
 
   // 1. Increment Victories to Winner
-  const winnerToken = await sdk.token.getV2({
+  const winnerTokenDetails = await sdk.token.getV2({
     collectionId: carsCollectionId,
     tokenId: winnerTokenId,
   });
 
-  if (!winnerToken) {
+  if (!winnerTokenDetails) {
     throw new Error(`Winner token not found for tokenId: ${winnerTokenId}`);
   }
 
-  const winnerAttributes = winnerToken.attributes || [];
+  const winnerAttributes = winnerTokenDetails.attributes || [];
   const victoriesAttribute = winnerAttributes.find(
     (a) => a.trait_type === "Victories"
   );
-  console.log(victoriesAttribute);
+  const trophiesAttribute = winnerAttributes.find(
+    (a) => a.trait_type === "Trophies"
+  );
 
   if (!victoriesAttribute || victoriesAttribute.value === undefined) {
     throw new Error(
       `Victories attribute not found for tokenId: ${winnerTokenId}`
+    );
+  }
+
+  if (!trophiesAttribute || trophiesAttribute.value === undefined) {
+    throw new Error(
+      `Trophies attribute not found for tokenId: ${winnerTokenId}`
     );
   }
 
@@ -86,25 +94,42 @@ export async function incrementWinnerToken(
       ? victoriesAttribute.value
       : parseInt(victoriesAttribute.value);
 
+  const winnerTrophies =
+    typeof trophiesAttribute.value === "number"
+      ? trophiesAttribute.value
+      : parseInt(trophiesAttribute.value);
+
   if (isNaN(winnerVictories)) {
     throw new Error(`Invalid Victories value for tokenId: ${winnerTokenId}`);
   }
 
+  if (isNaN(winnerTrophies)) {
+    throw new Error(`Invalid Trophies value for tokenId: ${winnerTokenId}`);
+  }
+
   console.log(`TokenID ${winnerTokenId} has ${winnerVictories} wins before`);
+  console.log(`TokenID ${winnerTokenId} has ${winnerTrophies} trophies before`);
 
   transactions.push(
     sdk.token.setProperties(
       {
         collectionId: carsCollectionId,
         tokenId: winnerTokenId,
-        // NOTICE: Attributes stored in "tokenData" property
         properties: [
           {
             key: "tokenData",
             value: changeAttribute(
-              winnerToken,
+              winnerTokenDetails,
               "Victories",
               winnerVictories + 1
+            ),
+          },
+          {
+            key: "tokenData",
+            value: changeAttribute(
+              winnerTokenDetails,
+              "Trophies",
+              winnerTrophies + 1
             ),
           },
         ],
@@ -122,10 +147,9 @@ export async function incrementWinnerToken(
         image:
           "https://gateway.pinata.cloud/ipfs/QmY7hbSNiwE3ApYp83CHWFdqrcEAM6AvChucBVA6kC1e8u",
         attributes: [{ trait_type: "Bonus", value: 10 }],
-        // NOTICE: owner of the achievement NFT is car NFT
         owner: Address.nesting.idsToAddress(
-          winnerToken.collectionId,
-          winnerToken.tokenId
+          winnerTokenDetails.collectionId,
+          winnerTokenDetails.tokenId
         ),
       },
       { nonce: nonce++ }
@@ -135,14 +159,15 @@ export async function incrementWinnerToken(
   console.log("Achievement NFT created");
   console.log(
     "Owner:",
-    Address.nesting.idsToAddress(winnerToken.collectionId, winnerToken.tokenId)
+    Address.nesting.idsToAddress(winnerTokenDetails.collectionId, winnerTokenDetails.tokenId)
   );
   alert(
-    `Explore your NFT: https://uniquescan.io/opal/tokens/${winnerToken.collectionId}/${winnerToken.tokenId}`
+    `Explore your NFT: https://uniquescan.io/opal/tokens/${winnerTokenDetails.collectionId}/${winnerTokenDetails.tokenId}`
   );
   await Promise.all(transactions);
 
   console.log(`TokenID ${winnerTokenId} has ${winnerVictories + 1} wins`);
+  console.log(`TokenID ${winnerTokenId} has ${winnerTrophies + 1} trophies`);
 }
 
 async function createToken(
@@ -160,7 +185,7 @@ async function createToken(
       : "https://gateway.pinata.cloud/ipfs/QmNn6jfFu1jE7xPC2oxJ75kY1RvA2tz9bpQDsqweX2kDig";
   const tokens = await sdk.token.accountTokens({
     address: owner,
-    collectionId: 3231,
+    collectionId: 3416,
   });
   if (tokens.tokens.length > 0) {
     console.log("Player already exists");
@@ -168,7 +193,7 @@ async function createToken(
     return;
   } else {
     const tokenTx = await sdk.token.createV2({
-      collectionId: 3231,
+      collectionId: 3416,
       image: tokenImage,
       owner: owner,
       attributes: [
@@ -182,6 +207,10 @@ async function createToken(
         },
         {
           trait_type: "Games",
+          value: 0,
+        },
+        {
+          trait_type: "Trophies",
           value: 0,
         },
       ],
@@ -241,7 +270,7 @@ export const AccountsContextProvider = ({ children }: PropsWithChildren) => {
       if (!accounts.has(address)) {
         // Create a new NFT for the account
         console.log(`Creating NFT for ${name} with address ${account.address}`);
-        await createToken(3231, account.address, name);
+        await createToken(3416, account.address, name);
       }
     }
     console.log("Displaying polkadot accounts");

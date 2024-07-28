@@ -48,7 +48,7 @@ export const RacecarPage = () => {
     }
 
     partySocketRef.current = new PartySocket({
-      host: "10.253.143.53:1999", // 10.253.143.53
+      host: "localhost:1999", // 10.253.143.53
       room: "my-room",
       id: id,
     });
@@ -113,13 +113,12 @@ export const RacecarPage = () => {
       setProgress(resetProgress);
       localStorage.setItem("progress", JSON.stringify(resetProgress));
       console.log("Winner", `Player ${index + 1}`);
-      incrementWinnerToken(3231, 3277, userId);
     }
   };
 
   const incrementAsyncWinnerToken = async (owner: string) => {
     console.log("Incrementing winner token for owner:", owner);
-    incrementWinnerToken(3231, 3277, owner);
+    incrementWinnerToken(3416, 3419, owner);
   };
   useEffect(() => {
     if (gameState && gameState.winner) {

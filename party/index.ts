@@ -1,5 +1,4 @@
 import type * as Party from "partykit/server";
-import { incrementWinnerToken } from "../src/accounts/AccountsContext";
 
 interface GameState {
   phase: "waiting" | "playing" | "over";

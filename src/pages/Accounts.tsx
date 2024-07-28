@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useState, useEffect } from "react";
 import { AccountsContext } from "../accounts/AccountsContext";
 import { Account } from "../accounts/types";
 import { List } from "../components/List";
@@ -15,6 +15,19 @@ export const AccountsPage = () => {
   const [transferAmountIsVisible, setTransferAmountIsVisible] = useState(false);
   const [signMessageIsVisible, setSignMessageIsVisible] = useState(false);
   const [createAccountIsVisible, setCreateAccountIsVisible] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
+  const [userTrophies, setUserTrophies] = useState(0);
+
+
+    useEffect(() => {
+      const accountsArray = Array.from(accounts.entries());
+      if (accountsArray.length > 0) {
+          const [id, details] = accountsArray[0];
+          setUserId(id);
+          setUserName(details.name);
+      }
+  }, [accounts]);
 
   const navigate = useNavigate(); // Initialize useNavigate
 
@@ -53,12 +66,20 @@ export const AccountsPage = () => {
   }, []);
 
   const navigateToMarketplace = useCallback(() => {
-    navigate("/marketplace"); // Navigate to "/marketplace" when clicked
-  }, [navigate]);
+    if (userId !== "") {
+      navigate("/marketplace");
+    } else {
+      alert("Connect wallet first!");
+    }
+  }, [userId, navigate]);
 
   const navigateToRacecar = useCallback(() => {
-    navigate("/racecar"); // Navigate to "/racecar" when clicked
-  }, [navigate]);
+    if (userId !== "") {
+      navigate("/racecar");
+    } else {
+      alert("Connect wallet first!");
+    }
+  }, [userId, navigate]);
 
   return (
     <div className="page">
