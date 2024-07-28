@@ -128,6 +128,15 @@ export const RacecarPage = () => {
   // console.log("Game State", gameState?.players);
   return (
     <div>
+      <div className="title-container">
+        <img
+          src="/polkaTypeRacer.png"
+          alt="Racecar"
+          className="racecar-image"
+          style={{ width: "250px", height: "250px" }}
+        />
+        <h1>Racecar Game</h1>
+      </div>
       {gameState && gameState.winner && (
         <div className="winner-notification">
           {gameState.winner} has won!
@@ -142,7 +151,6 @@ export const RacecarPage = () => {
         </div>
       )}
       <div>Tab Index: {tabIndex + 1}</div>
-
       {gameState &&
         gameState.players &&
         Object.entries(gameState.players).map(([playerId, player], index) => (
