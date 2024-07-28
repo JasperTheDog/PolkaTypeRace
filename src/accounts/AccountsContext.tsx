@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { SdkContext } from "../sdk/SdkContext";
+import { Sdk } from "@unique-nft/sdk/full";
 import { SignByLocalSignerModalContext } from "../signModal/SignByLocalSignerModalContext";
 import { noop } from "../utils/common";
 import {
@@ -18,6 +19,8 @@ import {
 import { Account, AccountsContextValue } from "./types";
 import { connectSdk } from "../utils/connect-sdk.js";
 import { getRandomInt } from "../utils/random.js";
+import { changeAttribute } from "../utils/change-attribute.js";
+import { Address } from "@unique-nft/sdk/utils";
 
 export const AccountsContext = createContext<AccountsContextValue>({
   accounts: new Map(),
@@ -26,6 +29,104 @@ export const AccountsContext = createContext<AccountsContextValue>({
   fetchMetamaskAccounts: noop,
   fetchLocalAccounts: noop,
 });
+
+async function incrementWinnerToken(
+  carsCollectionId: number,
+  achievementsCollectionId: number,
+  owner: string,
+) {
+  console.log("Incrementing winner token for owner:", owner);
+  const { account, sdk } = await connectSdk();
+  const tokens = await sdk.token.accountTokens({
+    address: owner,
+    collectionId: 3231,
+  });
+
+  let winnerTokenId: number;
+  try {
+    const winnerToken = tokens.tokens[0];
+    if (!winnerToken) {
+      throw new Error(`Winner token not found for owner: ${owner}`);
+    }
+    winnerTokenId = winnerToken.tokenId;
+  } catch (error) {
+    throw new Error(`No token found for owner: ${owner}`);
+  }
+
+  console.log("Incrementing winner token");
+  console.log(carsCollectionId, achievementsCollectionId, winnerTokenId);
+
+
+  let { nonce } = await sdk.common.getNonce(account);
+  const transactions = [];
+
+  // 1. Increment Victories to Winner
+  const winnerToken = await sdk.token.getV2({
+    collectionId: carsCollectionId,
+    tokenId: winnerTokenId,
+  });
+
+  if (!winnerToken) {
+    throw new Error(`Winner token not found for tokenId: ${winnerTokenId}`);
+  }
+
+  const winnerAttributes = winnerToken.attributes || [];
+  const victoriesAttribute = winnerAttributes.find(
+    (a) => a.trait_type === "Victories"
+  );
+  console.log(victoriesAttribute);
+
+  if (!victoriesAttribute || victoriesAttribute.value === undefined) {
+    throw new Error(`Victories attribute not found for tokenId: ${winnerTokenId}`);
+  }
+
+  const winnerVictories = typeof victoriesAttribute.value === "number"
+    ? victoriesAttribute.value
+    : parseInt(victoriesAttribute.value);
+
+  if (isNaN(winnerVictories)) {
+    throw new Error(`Invalid Victories value for tokenId: ${winnerTokenId}`);
+  }
+
+  console.log(`TokenID ${winnerTokenId} has ${winnerVictories} wins before`);
+
+  transactions.push(sdk.token.setProperties({
+    collectionId: carsCollectionId,
+    tokenId: winnerTokenId,
+    // NOTICE: Attributes stored in "tokenData" property
+    properties: [{
+      key: "tokenData",
+      value: changeAttribute(winnerToken, "Victories", winnerVictories + 1)
+    }]
+  }, { nonce: nonce++}));
+
+
+  console.log("Creating achievement NFT");
+
+  transactions.push(
+    sdk.token.createV2({
+      collectionId: achievementsCollectionId,
+      image:
+        "https://gateway.pinata.cloud/ipfs/QmY7hbSNiwE3ApYp83CHWFdqrcEAM6AvChucBVA6kC1e8u",
+      attributes: [{ trait_type: "Bonus", value: 10 }],
+      // NOTICE: owner of the achievement NFT is car NFT
+      owner: Address.nesting.idsToAddress(
+        winnerToken.collectionId,
+        winnerToken.tokenId
+      ),
+    }, { nonce: nonce++ })
+  );
+
+  console.log("Achievement NFT created");
+  console.log("Owner:", Address.nesting.idsToAddress(
+    winnerToken.collectionId,
+    winnerToken.tokenId
+  ));
+
+  await Promise.all(transactions);
+
+  console.log(`TokenID ${winnerTokenId} has ${winnerVictories + 1} wins`);
+}
 
 async function createToken(
   collectionId: number,
@@ -63,7 +164,7 @@ async function createToken(
           value: 0,
         },
         {
-          trait_type: "Defeats",
+          trait_type: "Games",
           value: 0,
         },
       ],
@@ -124,8 +225,11 @@ export const AccountsContextProvider = ({ children }: PropsWithChildren) => {
         // Create a new NFT for the account
         console.log(`Creating NFT for ${name} with address ${account.address}`);
         await createToken(3231, account.address, name);
+        //play(3231, 3183, 2, 3);
+        incrementWinnerToken(3231, 3277, account.address);
       }
     }
+    console.log("Displaying polkadot accounts");
     const accountsToUpdate = new Map([...accounts, ...polkadotAccounts]);
     setAccounts(accountsToUpdate);
   }, [sdk, accounts]);

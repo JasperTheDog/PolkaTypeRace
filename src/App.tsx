@@ -1,3 +1,5 @@
+// App.tsx
+import './polyfill.js'; // Add this import at the very top
 import { useContext } from "react";
 import {
   AccountsContextProvider,

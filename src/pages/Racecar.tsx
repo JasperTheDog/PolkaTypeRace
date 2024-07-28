@@ -53,7 +53,7 @@ export const RacecarPage = () => {
     }
 
     partySocketRef.current = new PartySocket({
-      host: "10.253.143.53:1999",
+      host: "localhost:1999", // 10.253.143.53
       room: "my-room",
       id: id,
     });
