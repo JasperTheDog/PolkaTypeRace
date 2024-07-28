@@ -1,7 +1,7 @@
 import type * as Party from "partykit/server";
 
 interface GameState {
-  phase: "waiting" | "playing";
+  phase: "waiting" | "playing" | "over";
   prompt: string;
   players: {
     [connectionId: string]: {
@@ -45,10 +45,22 @@ export default class Server implements Party.Server {
         player.progress = 100;
       }
 
-      // Broadcast the updated game state
-      // Wrap JSON with game state identifier
+      // If the player's progress has reached 100, the game is over
+      if (player.progress === 100) {
+        // Set the game state to over
+        this.gameState.phase = "over";
 
-      this.room.broadcast(JSON.stringify(this.gameState));
+        // Broadcast a message indicating the winner
+        this.room.broadcast(JSON.stringify({ winner: playerId }));
+
+        // Reset the game
+        this.gameState.players = {};
+        this.gameState.prompt = "Type this new text";
+        this.startGame();
+      } else {
+        // Broadcast the updated game state
+        this.room.broadcast(JSON.stringify(this.gameState));
+      }
     }
   }
 

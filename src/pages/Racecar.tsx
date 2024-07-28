@@ -14,6 +14,7 @@ interface Player {
 interface GameState {
   phase: string;
   prompt: string;
+  winner: string;
   players: Record<string, Player>;
 }
 export const RacecarPage = () => {
@@ -26,6 +27,7 @@ export const RacecarPage = () => {
   const { accounts } = useContext(AccountsContext);
   const partySocketRef = useRef<PartySocket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [counter, setCounter] = useState(0);
   // useEffect(() => {
   //   const accountsArray = Array.from(accounts.entries());
   //   const firstAccount = accountsArray[0];
@@ -63,7 +65,7 @@ export const RacecarPage = () => {
     });
     JSON.stringify({ playerId: userId, playerName: userName, progress: "" });
     return () => partySocketRef.current?.close();
-  }, []);
+  }, [counter]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -109,7 +111,19 @@ export const RacecarPage = () => {
   console.log("Game State", gameState?.players);
   return (
     <div>
-      {winner && <div className="winner-notification">{winner} has won!</div>}
+      {gameState && gameState.winner && (
+        <div className="winner-notification">
+          {gameState.winner} has won!
+          <button
+            onClick={() => {
+              setCounter(counter + 1);
+              setInputText("");
+            }}
+          >
+            Start New Game
+          </button>
+        </div>
+      )}
       <div>Tab Index: {tabIndex + 1}</div>
 
       {gameState &&
