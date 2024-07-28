@@ -33,7 +33,7 @@ export const AccountsContext = createContext<AccountsContextValue>({
 export async function incrementWinnerToken(
   carsCollectionId: number,
   achievementsCollectionId: number,
-  owner: string,
+  owner: string
 ) {
   console.log("Incrementing winner token for owner:", owner);
   const { account, sdk } = await connectSdk();
@@ -56,7 +56,6 @@ export async function incrementWinnerToken(
   console.log("Incrementing winner token");
   console.log(carsCollectionId, achievementsCollectionId, winnerTokenId);
 
-
   let { nonce } = await sdk.common.getNonce(account);
   const transactions = [];
 
@@ -77,12 +76,15 @@ export async function incrementWinnerToken(
   console.log(victoriesAttribute);
 
   if (!victoriesAttribute || victoriesAttribute.value === undefined) {
-    throw new Error(`Victories attribute not found for tokenId: ${winnerTokenId}`);
+    throw new Error(
+      `Victories attribute not found for tokenId: ${winnerTokenId}`
+    );
   }
 
-  const winnerVictories = typeof victoriesAttribute.value === "number"
-    ? victoriesAttribute.value
-    : parseInt(victoriesAttribute.value);
+  const winnerVictories =
+    typeof victoriesAttribute.value === "number"
+      ? victoriesAttribute.value
+      : parseInt(victoriesAttribute.value);
 
   if (isNaN(winnerVictories)) {
     throw new Error(`Invalid Victories value for tokenId: ${winnerTokenId}`);
@@ -90,39 +92,54 @@ export async function incrementWinnerToken(
 
   console.log(`TokenID ${winnerTokenId} has ${winnerVictories} wins before`);
 
-  transactions.push(sdk.token.setProperties({
-    collectionId: carsCollectionId,
-    tokenId: winnerTokenId,
-    // NOTICE: Attributes stored in "tokenData" property
-    properties: [{
-      key: "tokenData",
-      value: changeAttribute(winnerToken, "Victories", winnerVictories + 1)
-    }]
-  }, { nonce: nonce++}));
-
+  transactions.push(
+    sdk.token.setProperties(
+      {
+        collectionId: carsCollectionId,
+        tokenId: winnerTokenId,
+        // NOTICE: Attributes stored in "tokenData" property
+        properties: [
+          {
+            key: "tokenData",
+            value: changeAttribute(
+              winnerToken,
+              "Victories",
+              winnerVictories + 1
+            ),
+          },
+        ],
+      },
+      { nonce: nonce++ }
+    )
+  );
 
   console.log("Creating achievement NFT");
 
   transactions.push(
-    sdk.token.createV2({
-      collectionId: achievementsCollectionId,
-      image:
-        "https://gateway.pinata.cloud/ipfs/QmY7hbSNiwE3ApYp83CHWFdqrcEAM6AvChucBVA6kC1e8u",
-      attributes: [{ trait_type: "Bonus", value: 10 }],
-      // NOTICE: owner of the achievement NFT is car NFT
-      owner: Address.nesting.idsToAddress(
-        winnerToken.collectionId,
-        winnerToken.tokenId
-      ),
-    }, { nonce: nonce++ })
+    sdk.token.createV2(
+      {
+        collectionId: achievementsCollectionId,
+        image:
+          "https://gateway.pinata.cloud/ipfs/QmY7hbSNiwE3ApYp83CHWFdqrcEAM6AvChucBVA6kC1e8u",
+        attributes: [{ trait_type: "Bonus", value: 10 }],
+        // NOTICE: owner of the achievement NFT is car NFT
+        owner: Address.nesting.idsToAddress(
+          winnerToken.collectionId,
+          winnerToken.tokenId
+        ),
+      },
+      { nonce: nonce++ }
+    )
   );
 
   console.log("Achievement NFT created");
-  console.log("Owner:", Address.nesting.idsToAddress(
-    winnerToken.collectionId,
-    winnerToken.tokenId
-  ));
-
+  console.log(
+    "Owner:",
+    Address.nesting.idsToAddress(winnerToken.collectionId, winnerToken.tokenId)
+  );
+  alert(
+    `Explore your NFT: https://uniquescan.io/opal/tokens/${winnerToken.collectionId}/${winnerToken.tokenId}`
+  );
   await Promise.all(transactions);
 
   console.log(`TokenID ${winnerTokenId} has ${winnerVictories + 1} wins`);

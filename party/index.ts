@@ -3,7 +3,9 @@ import { incrementWinnerToken } from "../src/accounts/AccountsContext";
 
 interface GameState {
   phase: "waiting" | "playing" | "over";
+  gameStartCountdown: number;
   prompt: string;
+
   players: {
     [connectionId: string]: {
       progress: number;
@@ -19,11 +21,16 @@ export default class Server implements Party.Server {
   constructor(readonly room: Party.Room) {
     this.gameState = {
       phase: "waiting",
+      gameStartCountdown: 10,
       prompt: "Type this text",
       players: {},
     };
   }
-
+  onAlarm() {
+    // clear all storage in this room
+    this.gameState.phase = "playing";
+    this.room.broadcast(JSON.stringify(this.gameState));
+  }
   // when a client sends a message
   onMessage(message: string, sender: Party.Connection) {
     // Parse the message as JSON
@@ -49,18 +56,19 @@ export default class Server implements Party.Server {
       // If the player's progress has reached 100, the game is over
       if (player.progress === 100) {
         console.log(`Player ${playerId} has won!`);
-        // Increment the winner's score
-        //incrementWinnerToken(3231, 3277, playerId);
         // Set the game state to over
-        this.gameState.phase = "over";
+        this.gameState.phase = "waiting";
+        this.gameState.gameStartCountdown = 30;
 
         // Broadcast a message indicating the winner
         this.room.broadcast(JSON.stringify({ winner: playerId }));
 
         // Reset the game
-        this.gameState.players = {};
         this.gameState.prompt = "Type this new text";
-        this.startGame();
+        // for each gameState.player
+        for (let playerId in this.gameState.players) {
+          this.gameState.players[playerId].progress = 0;
+        }
       } else {
         // Broadcast the updated game state
         this.room.broadcast(JSON.stringify(this.gameState));
@@ -68,31 +76,60 @@ export default class Server implements Party.Server {
     }
   }
 
+  startCountdown() {
+    console.log("Starting countdown");
+    console.log(
+      "Number of players:",
+      Object.keys(this.gameState.players).length
+    );
+    if (Object.keys(this.gameState.players).length > 1) {
+      this.gameState.gameStartCountdown = 30; // 30 seconds
+      const countdownInterval = setInterval(() => {
+        console.log("Countdown:", this.gameState.gameStartCountdown);
+        if (this.gameState.gameStartCountdown > 0) {
+          console.log(this.gameState.gameStartCountdown);
+          this.gameState.gameStartCountdown--;
+          this.room.broadcast(JSON.stringify(this.gameState));
+        } else {
+          clearInterval(countdownInterval);
+          this.startGame();
+        }
+      }, 1000); // 1 second
+    }
+  }
+
+  clearCountdown() {
+    if (this.gameStartTimeout !== null) {
+      clearInterval(this.gameStartTimeout);
+      this.gameStartTimeout = null;
+    }
+  }
+  broadcastMessage() {
+    setInterval(() => {
+      this.gameState.gameStartCountdown--;
+      if (this.gameState.gameStartCountdown === 0) {
+        this.startGame();
+      }
+      if (this.gameState.gameStartCountdown >= 0) {
+        this.room.broadcast(JSON.stringify(this.gameState)); // Broadcast the message to the server
+      }
+    }, 1000); // 60000 milliseconds = 1 minute
+  }
   // when a new client connects
   onConnect(connection: Party.Connection) {
+    console.log("New connection");
     this.gameState.players[connection.id] = { userName: "", progress: 0 };
     connection.send(JSON.stringify(this.gameState));
-    // this.room.broadcast(`Welcome, ${connection.id}`);
-    if (
-      Object.keys(this.gameState.players).length > 1 &&
-      !this.gameStartTimeout
-    ) {
-      this.gameStartTimeout = setTimeout(() => {
-        this.startGame();
-        this.gameStartTimeout = null;
-      }, 30000); // 30 seconds
-    }
+    this.broadcastMessage();
   }
 
   // when a client disconnects
   onClose(connection: Party.Connection) {
     delete this.gameState.players[connection.id];
-    // this.room.broadcast(`So sad! ${connection.id} left the party!`);
   }
 
   startGame() {
     this.gameState.phase = "playing";
-    // this.room.broadcast(JSON.stringify(this.gameState));
   }
 }
 
