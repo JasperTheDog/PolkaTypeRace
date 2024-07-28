@@ -1,30 +1,82 @@
 import type * as Party from "partykit/server";
 
+interface GameState {
+  phase: "waiting" | "playing";
+  prompt: string;
+  players: {
+    [connectionId: string]: {
+      progress: number;
+      userName: string;
+    };
+  };
+}
+
 export default class Server implements Party.Server {
-  constructor(readonly room: Party.Room) {}
+  private gameState: GameState;
+  private gameStartTimeout: NodeJS.Timeout | null = null;
 
-  onConnect(conn: Party.Connection, ctx: Party.ConnectionContext) {
-    // A websocket just connected!
-    console.log(
-      `Connected:
-  id: ${conn.id}
-  room: ${this.room.id}
-  url: ${new URL(ctx.request.url).pathname}`
-    );
-
-    // let's send a message to the connection
-    conn.send("hello from server");
+  constructor(readonly room: Party.Room) {
+    this.gameState = {
+      phase: "waiting",
+      prompt: "Type this text",
+      players: {},
+    };
   }
 
+  // when a client sends a message
   onMessage(message: string, sender: Party.Connection) {
-    // let's log the message
-    console.log(`connection ${sender.id} sent message: ${message}`);
-    // as well as broadcast it to all the other connections in the room...
-    this.room.broadcast(
-      `${sender.id}: ${message}`,
-      // ...except for the connection it came from
-      [sender.id]
-    );
+    // Parse the message as JSON
+    const { playerId, name, progress } = JSON.parse(message);
+
+    // Find the player in the game state
+    const player = this.gameState.players[playerId];
+
+    if (player) {
+      // Calculate the player's progress as a percentage of the prompt's length
+      // Check if the input matches the corresponding part of the prompt
+      const correctChars = progress
+        .split("")
+        .filter((char, index) => char === this.gameState.prompt[index]).length;
+      player.userName = name;
+      player.progress = (correctChars / this.gameState.prompt.length) * 100;
+
+      // Cap the progress at 100
+      if (player.progress > 100) {
+        player.progress = 100;
+      }
+
+      // Broadcast the updated game state
+      // Wrap JSON with game state identifier
+
+      this.room.broadcast(JSON.stringify(this.gameState));
+    }
+  }
+
+  // when a new client connects
+  onConnect(connection: Party.Connection) {
+    this.gameState.players[connection.id] = { userName: "", progress: 0 };
+    connection.send(JSON.stringify(this.gameState));
+    // this.room.broadcast(`Welcome, ${connection.id}`);
+    if (
+      Object.keys(this.gameState.players).length > 1 &&
+      !this.gameStartTimeout
+    ) {
+      this.gameStartTimeout = setTimeout(() => {
+        this.startGame();
+        this.gameStartTimeout = null;
+      }, 30000); // 30 seconds
+    }
+  }
+
+  // when a client disconnects
+  onClose(connection: Party.Connection) {
+    delete this.gameState.players[connection.id];
+    // this.room.broadcast(`So sad! ${connection.id} left the party!`);
+  }
+
+  startGame() {
+    this.gameState.phase = "playing";
+    // this.room.broadcast(JSON.stringify(this.gameState));
   }
 }
 

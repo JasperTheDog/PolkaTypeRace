@@ -1,58 +1,91 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./styles.css"; // Ensure this path is correct
+import PartySocket from "partysocket";
+import { useContext } from "react";
+import {
+  AccountsContextProvider,
+  AccountsContext,
+} from "../accounts/AccountsContext";
 
+interface Player {
+  progress: number;
+}
+
+interface GameState {
+  phase: string;
+  prompt: string;
+  players: Record<string, Player>;
+}
 export const RacecarPage = () => {
   const [progress, setProgress] = useState([0, 0, 0, 0]);
   const [inputText, setInputText] = useState("");
   const [tabIndex, setTabIndex] = useState(0);
   const [winner, setWinner] = useState<string | null>(null);
+  const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
+  const { accounts } = useContext(AccountsContext);
+  const partySocketRef = useRef<PartySocket | null>(null);
+  const [gameState, setGameState] = useState<GameState | null>(null);
+  // useEffect(() => {
+  //   const accountsArray = Array.from(accounts.entries());
+  //   const firstAccount = accountsArray[0];
+
+  //   if (firstAccount) {
+  //     const [id, details] = firstAccount;
+  //     setUserId(id);
+  //     setUserName(details.name);
+  //     console.log(`User ID: ${id}, User Name: ${details.name}`);
+  //   }
+  // }, [accounts]);
 
   const readOnlyText = "TEST test TEST";
 
+  // connect to our server
   useEffect(() => {
-    let tabsOpen = localStorage.getItem("tabsOpen");
-    if (tabsOpen == null) {
-      localStorage.setItem("tabsOpen", "1");
-      setTabIndex(0);
-    } else {
-      const newTabsOpen = parseInt(tabsOpen) + 1;
-      localStorage.setItem("tabsOpen", newTabsOpen.toString());
-      setTabIndex(newTabsOpen - 1);
+    const accountsArray = Array.from(accounts.entries());
+    const firstAccount = accountsArray[0];
+    const [id, details] = firstAccount;
+    if (firstAccount) {
+      setUserId(id);
+      setUserName(details.name);
     }
 
-    const storedProgress = localStorage.getItem("progress");
-    if (storedProgress) {
-      setProgress(JSON.parse(storedProgress));
-    }
+    partySocketRef.current = new PartySocket({
+      host: "10.253.143.53:1999",
+      room: "my-room",
+      id: id,
+    });
 
-    const storedWinner = localStorage.getItem("winner");
-    if (storedWinner) {
-      setWinner(storedWinner);
-    }
-
-    const handleStorageChange = () => {
-      const updatedProgress = localStorage.getItem("progress");
-      if (updatedProgress) {
-        setProgress(JSON.parse(updatedProgress));
-      }
-
-      const updatedWinner = localStorage.getItem("winner");
-      if (updatedWinner) {
-        setWinner(updatedWinner);
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      let tabsOpen = localStorage.getItem("tabsOpen");
-      if (tabsOpen != null) {
-        const newTabsOpen = parseInt(tabsOpen) - 1;
-        localStorage.setItem("tabsOpen", newTabsOpen.toString());
-      }
-      window.removeEventListener("storage", handleStorageChange);
-    };
+    partySocketRef.current.addEventListener("message", (e) => {
+      const data = JSON.parse(e.data);
+      setGameState(data);
+      console.log(data);
+    });
+    JSON.stringify({ playerId: userId, playerName: userName, progress: "" });
+    return () => partySocketRef.current?.close();
   }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputText(value);
+
+    const correctChars = value
+      .split("")
+      .filter((char, index) => char === readOnlyText[index]).length;
+
+    const progressValue = (correctChars / readOnlyText.length) * 100;
+    updateProgress(tabIndex, progressValue); // Update the progress bar for the current tab
+
+    // Send the current progress to the server
+    console.log(`Sending progress: ${value}`);
+    partySocketRef.current?.send(
+      JSON.stringify({
+        playerId: userId,
+        playerName: userName,
+        progress: value,
+      })
+    );
+  };
 
   const updateProgress = (index: number, value: number) => {
     const newProgress = [...progress];
@@ -72,49 +105,49 @@ export const RacecarPage = () => {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputText(value);
-
-    const correctChars = value
-      .split("")
-      .filter((char, index) => char === readOnlyText[index]).length;
-
-    const progressValue = (correctChars / readOnlyText.length) * 100;
-    updateProgress(tabIndex, progressValue); // Update the progress bar for the current tab
-  };
-
+  console.log("Game State", gameState);
+  console.log("Game State", gameState?.players);
   return (
     <div>
       {winner && <div className="winner-notification">{winner} has won!</div>}
       <div>Tab Index: {tabIndex + 1}</div>
-      {progress.map((value, index) => (
-        <div key={index} className="progress-container">
-          <div className="racer-number">Racer {index + 1}</div>
-          <div
-            id={`progress${index + 1}`}
-            className="progress-bar"
-            style={{ width: `${value}%` }}
-          ></div>
-          <img
-            src="/public/car.png"
-            alt="Car"
-            className="car"
-            id={`car${index + 1}`}
-            style={{ left: `${value}%` }}
+
+      {gameState &&
+        gameState.players &&
+        Object.entries(gameState.players).map(([playerId, player], index) => (
+          <div key={playerId} className="progress-container">
+            <div className="racer-number">Racer {playerId}</div>
+            <div
+              id={`progress${index + 1}`}
+              className="progress-bar"
+              style={{ width: `${player.progress}%` }}
+            ></div>
+            <img
+              src="/car.png"
+              alt="Car"
+              className="car"
+              id={`car${index + 1}`}
+              style={{ left: `${player.progress}%` }}
+            />
+          </div>
+        ))}
+      {gameState && gameState.players && (
+        <div className="textbox-container">
+          <input
+            type="text"
+            value={gameState.prompt}
+            readOnly
+            className="textbox"
+          />
+          <input
+            type="text"
+            placeholder="Enter text here"
+            className="textbox"
+            value={inputText}
+            onChange={handleInputChange}
           />
         </div>
-      ))}
-      <div className="textbox-container">
-        <input type="text" value={readOnlyText} readOnly className="textbox" />
-        <input
-          type="text"
-          placeholder="Enter text here"
-          className="textbox"
-          value={inputText}
-          onChange={handleInputChange}
-        />
-      </div>
+      )}
     </div>
   );
 };
