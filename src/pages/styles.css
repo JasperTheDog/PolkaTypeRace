@@ -1,0 +1,87 @@
+.slider-container {
+  margin: 20px 0;
+}
+
+.progress-container {
+  margin: 10px 0;
+  background-color: #f3f3f3;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  height: 50px; /* Increased height to accommodate car image */
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4caf50;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: width 0.1s;
+}
+
+.car {
+  height: 30px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: left 0.1s;
+}
+
+.slider {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 15px;
+  background: #ddd;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: 0.2s;
+  transition: opacity 0.2s;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #4caf50;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #4caf50;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.textbox-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.textbox {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.correct-char {
+  color: green;
+}
+
+.incorrect-char {
+  color: black;
+}
+
+.hidden-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
