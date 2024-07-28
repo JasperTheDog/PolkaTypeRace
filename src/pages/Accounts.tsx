@@ -71,12 +71,36 @@ export const AccountsPage = () => {
         />
         <h1>Polka Type Race</h1>
       </div>
-      <div className="top-bar">
-        <button onClick={fetchPolkadotAccounts}>Connect Polkadot Wallet</button>
-        <button onClick={navigateToMarketplace}>Marketplace</button>{" "}
-        {/* Add the new tab */}
-        <button onClick={navigateToRacecar}>Racecar</button>{" "}
-        {/* Add the new tab */}
+      <div
+        className="top-bar"
+        style={{
+          display: "flex",
+          justifyContent: "space-evenly",
+          alignItems: "center",
+        }}
+      >
+        <button
+          style={{ padding: "10px", fontSize: "16px", borderRadius: "5px" }}
+          onClick={fetchPolkadotAccounts}
+        >
+          Sign in with Polkadot Wallet
+        </button>
+        {accountsArray && accountsArray.length > 0 && (
+          <>
+            <button
+              style={{ padding: "10px", fontSize: "16px", borderRadius: "5px" }}
+              onClick={navigateToMarketplace}
+            >
+              Go to Marketplace
+            </button>
+            <button
+              style={{ padding: "10px", fontSize: "16px", borderRadius: "5px" }}
+              onClick={navigateToRacecar}
+            >
+              Let's Race!
+            </button>
+          </>
+        )}
       </div>
       <List>
         {accountsArray.map((account) => {

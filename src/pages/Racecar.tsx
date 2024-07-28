@@ -112,7 +112,6 @@ export const RacecarPage = () => {
       setProgress(resetProgress);
       localStorage.setItem("progress", JSON.stringify(resetProgress));
       console.log("Winner", `Player ${index + 1}`);
-      incrementWinnerToken(3231, 3277, userId);
     }
   };
 
@@ -122,17 +121,28 @@ export const RacecarPage = () => {
   };
 
   const getStyledText = () => {
-    return readOnlyText.split("").map((char, index) => {
-      const isCorrect = inputText[index] === char;
-      return (
-        <span
-          key={index}
-          className={isCorrect ? "correct-char" : "incorrect-char"}
-        >
-          {char}
-        </span>
-      );
-    });
+    return (
+      <div
+        style={{
+          border: "1px solid #000",
+          padding: "10px",
+          backgroundColor: "white",
+          borderRadius: "10px",
+        }}
+      >
+        {readOnlyText.split("").map((char, index) => {
+          const isCorrect = inputText[index] === char;
+          return (
+            <span
+              key={index}
+              className={isCorrect ? "correct-char" : "incorrect-char"}
+            >
+              {char}
+            </span>
+          );
+        })}
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -154,19 +164,24 @@ export const RacecarPage = () => {
         <h1>Polka Type Race</h1>
       </div>
       {gameState && gameState.winner && (
-        <div className="winner-notification">
-          {gameState.winner} has won!
+        <div
+          className="winner-notification"
+          style={{ display: "flex", flexDirection: "column" }}
+        >
+          <span>{gameState.winner} has won!</span>
           {gameState.winner === userId && (
-            <div>We are minting your NFT, wait one moment!</div>
+            <span>We are minting your NFT, wait one moment!</span>
           )}
-          )
-          <button
-            onClick={() => {
-              setCounter(counter + 1);
-            }}
-          >
-            Start New Game
-          </button>
+          <div>
+            {" "}
+            <button
+              onClick={() => {
+                setCounter(counter + 1);
+              }}
+            >
+              Start New Game
+            </button>
+          </div>
         </div>
       )}
       {gameState && gameState.phase === "waiting" && (
@@ -186,7 +201,9 @@ export const RacecarPage = () => {
         gameState.players &&
         Object.entries(gameState.players).map(([playerId, player], index) => (
           <div key={playerId} className="progress-container">
-            <div className="racer-number">Racer {playerId}</div>
+            <div className="racer-number">
+              <span style={{ color: "black" }}>Racer {playerId}</span>
+            </div>
             <div
               id={`progress${index + 1}`}
               className="progress-bar"
@@ -203,17 +220,11 @@ export const RacecarPage = () => {
         ))}
       {gameState && gameState.players && (
         <div className="textbox-container">
-          <textarea
-            value={
-              gameState.phase === "waiting"
-                ? "Game is starting soon, be ready!"
-                : gameState.prompt
-            }
-            readOnly
-            className="textbox"
-            style={{ whiteSpace: "pre-wrap" }}
-          />
-          <div className="textbox">{getStyledText()}</div>
+          <div className="textbox" style={{ whiteSpace: "pre-wrap" }}>
+            {gameState.phase === "waiting"
+              ? "Game is starting soon, be ready!"
+              : getStyledText()}
+          </div>
           <input
             type="text"
             placeholder="Enter text here"
