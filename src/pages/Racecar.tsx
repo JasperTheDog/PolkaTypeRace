@@ -18,6 +18,7 @@ interface GameState {
   phase: string;
   prompt: string;
   winner: string;
+  gameStartCountdown: number;
   players: Record<string, Player>;
 }
 export const RacecarPage = () => {
@@ -31,17 +32,6 @@ export const RacecarPage = () => {
   const partySocketRef = useRef<PartySocket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [counter, setCounter] = useState(0);
-  // useEffect(() => {
-  //   const accountsArray = Array.from(accounts.entries());
-  //   const firstAccount = accountsArray[0];
-
-  //   if (firstAccount) {
-  //     const [id, details] = firstAccount;
-  //     setUserId(id);
-  //     setUserName(details.name);
-  //     console.log(`User ID: ${id}, User Name: ${details.name}`);
-  //   }
-  // }, [accounts]);
 
   const readOnlyText = "TEST test TEST";
 
@@ -52,17 +42,32 @@ export const RacecarPage = () => {
     const [id, details] = firstAccount;
     if (firstAccount) {
       setUserId(id);
+      console.log("User ID", userId);
+      console.log("Just ID", id);
       setUserName(details.name);
     }
 
     partySocketRef.current = new PartySocket({
-      host: "localhost:1999", // 10.253.143.53
+      host: "10.253.143.53:1999", // 10.253.143.53
       room: "my-room",
       id: id,
     });
 
     partySocketRef.current.addEventListener("message", (e) => {
       const data = JSON.parse(e.data);
+      if (data.winner) {
+        console.log("Winner", data.winner);
+        console.log("User ID", userId);
+        console.log(id === data.winner);
+        if (data.winner === id) {
+          // alert(
+          //   `You have won, we are minting an NFT acheivement for you now at your wallet ${data.winner}!`
+          // );
+          incrementAsyncWinnerToken(id);
+        }
+        partySocketRef.current?.close();
+        setInputText("");
+      }
       setGameState(data);
       console.log(data);
     });
@@ -113,16 +118,13 @@ export const RacecarPage = () => {
   };
 
   const incrementAsyncWinnerToken = async (owner: string) => {
-    incrementWinnerToken(3231, 3277, userId);
+    console.log("Incrementing winner token for owner:", owner);
+    incrementWinnerToken(3231, 3277, owner);
   };
   useEffect(() => {
     if (gameState && gameState.winner) {
-      alert(`${gameState.winner} has won!`);
-      if (gameState.winner === userId) {
-        incrementAsyncWinnerToken(userId);
-      }
     }
-  }, [gameState?.winner, userId, counter]);
+  }, [counter]);
 
   // console.log("Game State", gameState);
   // console.log("Game State", gameState?.players);
@@ -140,17 +142,30 @@ export const RacecarPage = () => {
       {gameState && gameState.winner && (
         <div className="winner-notification">
           {gameState.winner} has won!
+          {gameState.winner === userId && (
+            <div>We are minting your NFT, wait one moment!</div>
+          )}
+          )
           <button
             onClick={() => {
               setCounter(counter + 1);
-              setInputText("");
             }}
           >
             Start New Game
           </button>
         </div>
       )}
-      <div>Tab Index: {tabIndex + 1}</div>
+      {gameState && gameState.phase === "waiting" && (
+        <div className="waiting-notification">
+          Waiting for players to join... Game will start in{" "}
+          {gameState.gameStartCountdown} seconds
+        </div>
+      )}
+
+      {gameState && gameState.phase === "playing" && (
+        <div className="waiting-notification">Type the prompt!</div>
+      )}
+
       {gameState &&
         gameState.players &&
         Object.entries(gameState.players).map(([playerId, player], index) => (
@@ -174,7 +189,11 @@ export const RacecarPage = () => {
         <div className="textbox-container">
           <input
             type="text"
-            value={gameState.prompt}
+            value={
+              gameState.phase === "waiting"
+                ? "Game is starting soon, be ready!"
+                : gameState.prompt
+            }
             readOnly
             className="textbox"
           />
@@ -183,6 +202,7 @@ export const RacecarPage = () => {
             placeholder="Enter text here"
             className="textbox"
             value={inputText}
+            disabled={gameState.phase !== "playing"}
             onChange={handleInputChange}
           />
         </div>
