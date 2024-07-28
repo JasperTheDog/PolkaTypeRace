@@ -148,15 +148,17 @@ export const RacecarPage = () => {
       )}
       {gameState && gameState.phase === "waiting" && (
         <div className="waiting-notification">
-          Waiting for players to join... Game will start in{" "}
-          {gameState.gameStartCountdown} seconds
+          <h2>
+            Waiting for players to join... Game will start in{" "}
+            {gameState.gameStartCountdown} seconds
+          </h2>
         </div>
       )}
-
       {gameState && gameState.phase === "playing" && (
-        <div className="waiting-notification">Type the prompt!</div>
+        <div className="waiting-notification">
+          <h2>Type the prompt!</h2>
+        </div>
       )}
-
       {gameState &&
         gameState.players &&
         Object.entries(gameState.players).map(([playerId, player], index) => (
@@ -178,8 +180,7 @@ export const RacecarPage = () => {
         ))}
       {gameState && gameState.players && (
         <div className="textbox-container">
-          <input
-            type="text"
+          <textarea
             value={
               gameState.phase === "waiting"
                 ? "Game is starting soon, be ready!"
@@ -187,6 +188,7 @@ export const RacecarPage = () => {
             }
             readOnly
             className="textbox"
+            style={{ whiteSpace: "pre-wrap" }}
           />
           <input
             type="text"

@@ -14,6 +14,16 @@ interface GameState {
   };
 }
 
+// Array of prompts
+const prompts = [
+  "In the high-octane world of American motorsports, Conor Daly, a fierce and determined racing driver, found an unexpected ally in Polkadot's blockspace ecosystem.",
+  "Leveraging this innovative technology, Daly's team revolutionized their race strategies, using decentralized data to optimize performance and enhance communication in real-time.",
+  "As engines roared and tires screeched, Daly pushed the boundaries on the track, showcasing the synergy between cutting-edge blockchain solutions and the relentless pursuit of speed, forever changing the landscape of racing.",
+  "In the high-octane world of American motorsports, Conor Daly was a driving force, seamlessly blending speed with strategy on the track.",
+  "One sunny afternoon, Daly's team introduced an innovative twist to their racing strategy, leveraging the Polkadot blockspace ecosystem to analyze real-time data and optimize performance.",
+  "As engines roared and tires screeched around the circuit, Daly's car, now equipped with cutting-edge technology, weaved through competitors with newfound agility. This fusion of racing prowess and boundless innovation propelled Daly to the front of the pack, showcasing a thrilling new era where technology and motorsport collided, redefining the boundaries of speed and precision.",
+];
+
 export default class Server implements Party.Server {
   private gameState: GameState;
   private gameStartTimeout: NodeJS.Timeout | null = null;
@@ -129,6 +139,11 @@ export default class Server implements Party.Server {
   }
 
   startGame() {
+    // Select a random prompt
+    const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+    // Set the game state prompt to the random prompt
+    this.gameState.prompt = randomPrompt;
     this.gameState.phase = "playing";
   }
 }
