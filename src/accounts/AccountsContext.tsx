@@ -33,34 +33,48 @@ async function createToken(
   nickname: string
 ) {
   const { account, sdk } = await connectSdk();
+  console.log(account);
+  console.log(sdk);
+  console.log(collectionId, owner, nickname);
   const tokenImage =
     getRandomInt(2) === 0
       ? "https://gateway.pinata.cloud/ipfs/QmfWKy52e8pyH1jrLu4hwyAG6iwk6hcYa37DoVe8rdxXwV"
       : "https://gateway.pinata.cloud/ipfs/QmNn6jfFu1jE7xPC2oxJ75kY1RvA2tz9bpQDsqweX2kDig";
-  const tokenTx = await sdk.token.createV2({
-    collectionId: 3179,
-    image: tokenImage,
-    owner: "5CAsK4UFteseu6rBjEqmKFarLgmb4Rm5fDsyBK7EFZc6w5MN",
-    attributes: [
-      {
-        trait_type: "Nickname",
-        value: nickname,
-      },
-      {
-        trait_type: "Victories",
-        value: 0,
-      },
-      {
-        trait_type: "Defeats",
-        value: 0,
-      },
-    ],
+  const tokens = await sdk.token.accountTokens({
+    address: account.address,
+    collectionId: 3231,
   });
-  const token = tokenTx.parsed;
-  if (!token) throw Error("Cannot parse token");
-  console.log(
-    `Explore your NFT: https://uniquescan.io/opal/tokens/${token.collectionId}/${token.tokenId}`
-  );
+  if (tokens.tokens.length > 0) {
+    console.log("Player already exists");
+    return;
+  } else {
+    const tokenTx = await sdk.token.createV2({
+      collectionId: 3231,
+      image: tokenImage,
+      owner: account.address,
+      attributes: [
+        {
+          trait_type: "Nickname",
+          value: nickname,
+        },
+        {
+          trait_type: "Victories",
+          value: 0,
+        },
+        {
+          trait_type: "Defeats",
+          value: 0,
+        },
+      ],
+    });
+    console.log("Token created");
+    console.log(tokenTx);
+    const token = tokenTx.parsed;
+    if (!token) throw Error("Cannot parse token");
+    console.log(
+      `Explore your NFT: https://uniquescan.io/opal/tokens/${token.collectionId}/${token.tokenId}`
+    );
+  }
 }
 
 export const AccountsContextProvider = ({ children }: PropsWithChildren) => {
@@ -108,7 +122,7 @@ export const AccountsContextProvider = ({ children }: PropsWithChildren) => {
       if (!accounts.has(address)) {
         // Create a new NFT for the account
         console.log(`Creating NFT for ${name} with address ${account.address}`);
-        await createToken(3179, account.address, name);
+        await createToken(3231, account.address, name);
       }
     }
     const accountsToUpdate = new Map([...accounts, ...polkadotAccounts]);
