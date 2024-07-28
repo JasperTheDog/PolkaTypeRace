@@ -110,6 +110,18 @@ export const RacecarPage = () => {
     }
   };
 
+  const incrementAsyncWinnerToken = async (owner: string) => {
+    incrementWinnerToken(3231, 3277, userId);
+  };
+  useEffect(() => {
+    if (gameState && gameState.winner) {
+      alert(`${gameState.winner} has won!`);
+      if (gameState.winner === userId) {
+        incrementAsyncWinnerToken(userId);
+      }
+    }
+  }, [gameState?.winner, userId, counter]);
+
   // console.log("Game State", gameState);
   // console.log("Game State", gameState?.players);
   return (
