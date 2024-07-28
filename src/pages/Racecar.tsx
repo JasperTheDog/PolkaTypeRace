@@ -117,7 +117,7 @@ export const RacecarPage = () => {
 
   const incrementAsyncWinnerToken = async (owner: string) => {
     console.log("Incrementing winner token for owner:", owner);
-    incrementWinnerToken(3231, 3277, owner);
+    incrementWinnerToken(3416, 3419, owner);
   };
 
   const getStyledText = () => {
