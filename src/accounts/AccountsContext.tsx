@@ -41,17 +41,18 @@ async function createToken(
       ? "https://gateway.pinata.cloud/ipfs/QmfWKy52e8pyH1jrLu4hwyAG6iwk6hcYa37DoVe8rdxXwV"
       : "https://gateway.pinata.cloud/ipfs/QmNn6jfFu1jE7xPC2oxJ75kY1RvA2tz9bpQDsqweX2kDig";
   const tokens = await sdk.token.accountTokens({
-    address: account.address,
+    address: owner,
     collectionId: 3231,
   });
   if (tokens.tokens.length > 0) {
     console.log("Player already exists");
+    console.log(owner);
     return;
   } else {
     const tokenTx = await sdk.token.createV2({
       collectionId: 3231,
       image: tokenImage,
-      owner: account.address,
+      owner: owner,
       attributes: [
         {
           trait_type: "Nickname",
