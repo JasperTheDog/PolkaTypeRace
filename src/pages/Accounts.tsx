@@ -5,6 +5,7 @@ import { List } from "../components/List";
 import { CreateLocalAccountModal } from "../modals/CreateLocalAccountModal";
 import { SignMessageModal } from "../modals/SignMessageModal";
 import { TransferAmountModal } from "../modals/TransferAmountModal";
+import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useHistory
 
 export const AccountsPage = () => {
   const { accounts, fetchMetamaskAccounts, fetchPolkadotAccounts } =
@@ -14,6 +15,8 @@ export const AccountsPage = () => {
   const [transferAmountIsVisible, setTransferAmountIsVisible] = useState(false);
   const [signMessageIsVisible, setSignMessageIsVisible] = useState(false);
   const [createAccountIsVisible, setCreateAccountIsVisible] = useState(false);
+
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const onSend = useCallback(
     (account: Account) => () => {
@@ -49,10 +52,20 @@ export const AccountsPage = () => {
     setCreateAccountIsVisible(false);
   }, []);
 
+  const navigateToMarketplace = useCallback(() => {
+    navigate("/marketplace"); // Navigate to "/marketplace" when clicked
+  }, [navigate]);
+
+  const navigateToRacecar = useCallback(() => {
+    navigate("/racecar"); // Navigate to "/racecar" when clicked
+  }, [navigate]);
+
   return (
     <div className="page">
       <div className="top-bar">
         <button onClick={fetchPolkadotAccounts}>Connect Polkadot Wallet</button>
+        <button onClick={navigateToMarketplace}>Marketplace</button> {/* Add the new tab */}
+        <button onClick={navigateToRacecar}>Racecar</button> {/* Add the new tab */}
       </div>
       <List>
         {accountsArray.map((account) => {

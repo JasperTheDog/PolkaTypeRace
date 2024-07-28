@@ -8,6 +8,8 @@ import {
 } from "../accounts/AccountsContext";
 import { incrementWinnerToken } from "../accounts/AccountsContext";
 
+import { Link } from "react-router-dom"; // Import Link from react-router-dom
+
 interface Player {
   progress: number;
 }
@@ -196,6 +198,7 @@ export const RacecarPage = () => {
           />
         </div>
       )}
+      <Link to="/">Go back to Accounts</Link> {/* Add the Link component */}
     </div>
   );
 };
