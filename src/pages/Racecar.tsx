@@ -33,8 +33,7 @@ export const RacecarPage = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [counter, setCounter] = useState(0);
 
-  const readOnlyText = "TEST test TEST";
-
+  const readOnlyText = gameState?.prompt || "Type this text to win!";
   // connect to our server
   useEffect(() => {
     const accountsArray = Array.from(accounts.entries());
@@ -48,7 +47,7 @@ export const RacecarPage = () => {
     }
 
     partySocketRef.current = new PartySocket({
-      host: "10.253.143.53:1999", // 10.253.143.53
+      host: "localhost:1999", // 10.253.143.53
       room: "my-room",
       id: id,
     });
@@ -121,6 +120,21 @@ export const RacecarPage = () => {
     console.log("Incrementing winner token for owner:", owner);
     incrementWinnerToken(3231, 3277, owner);
   };
+
+  const getStyledText = () => {
+    return readOnlyText.split("").map((char, index) => {
+      const isCorrect = inputText[index] === char;
+      return (
+        <span
+          key={index}
+          className={isCorrect ? "correct-char" : "incorrect-char"}
+        >
+          {char}
+        </span>
+      );
+    });
+  };
+
   useEffect(() => {
     if (gameState && gameState.winner) {
     }
@@ -199,6 +213,7 @@ export const RacecarPage = () => {
             className="textbox"
             style={{ whiteSpace: "pre-wrap" }}
           />
+          <div className="textbox">{getStyledText()}</div>
           <input
             type="text"
             placeholder="Enter text here"
