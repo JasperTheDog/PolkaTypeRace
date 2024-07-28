@@ -129,7 +129,7 @@ export const RacecarPage = () => {
   // console.log("Game State", gameState);
   // console.log("Game State", gameState?.players);
   return (
-    <div>
+    <div className="game-container">
       <div className="title-container">
         <img
           src="/polkaTypeRacer.png"
@@ -137,7 +137,7 @@ export const RacecarPage = () => {
           className="racecar-image"
           style={{ width: "250px", height: "250px" }}
         />
-        <h1>Racecar Game</h1>
+        <h1>Polka Type Race</h1>
       </div>
       {gameState && gameState.winner && (
         <div className="winner-notification">
@@ -209,7 +209,10 @@ export const RacecarPage = () => {
           />
         </div>
       )}
-      <Link to="/">Go back to Accounts</Link> {/* Add the Link component */}
+      <Link style={{ color: "#fff" }} to="/">
+        Go back to Accounts
+      </Link>{" "}
+      {/* Add the Link component */}
     </div>
   );
 };

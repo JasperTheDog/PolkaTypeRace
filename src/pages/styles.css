@@ -1,7 +1,12 @@
 .slider-container {
   margin: 20px 0;
 }
-
+.game-container {
+  padding: 20px; /* adjust as needed */
+  background-color: #2e1e3d; /* dark background */
+  color: #fff; /* light text */
+  height: 100vh; /* full height */
+}
 .progress-container {
   margin: 10px 0;
   background-color: #f3f3f3;
