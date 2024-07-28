@@ -82,11 +82,22 @@ export const AccountsPage = () => {
   }, [userId, navigate]);
 
   return (
-    <div className="page">
+    <div className="game-container">
+      <div className="title-container">
+        <img
+          src="/polkaTypeRacer.png"
+          alt="Racecar"
+          className="racecar-image"
+          style={{ width: "250px", height: "250px" }}
+        />
+        <h1>Polka Type Race</h1>
+      </div>
       <div className="top-bar">
         <button onClick={fetchPolkadotAccounts}>Connect Polkadot Wallet</button>
-        <button onClick={navigateToMarketplace}>Marketplace</button> {/* Add the new tab */}
-        <button onClick={navigateToRacecar}>Racecar</button> {/* Add the new tab */}
+        <button onClick={navigateToMarketplace}>Marketplace</button>{" "}
+        {/* Add the new tab */}
+        <button onClick={navigateToRacecar}>Racecar</button>{" "}
+        {/* Add the new tab */}
       </div>
       <List>
         {accountsArray.map((account) => {

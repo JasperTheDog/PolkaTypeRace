@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext } from "react";
 import { connectSdk } from "../utils/connect-sdk.js";
 import { Link } from "react-router-dom"; // Import Link from react-router-dom
 import "./styles.css"; // Ensure this path is correct
@@ -6,20 +6,20 @@ import { AccountsContext } from "../accounts/AccountsContext";
 import { Address } from "@unique-nft/sdk/utils";
 
 export const Marketplace: React.FC = () => {
-    const [userName, setUserName] = useState("");
-    const [userId, setUserId] = useState("");
-    const [userTrophies, setUserTrophies] = useState(0);
-    const { accounts } = useContext(AccountsContext);
+  const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
+  const [userTrophies, setUserTrophies] = useState(0);
+  const { accounts } = useContext(AccountsContext);
 
-    // Set user info from accounts context
-    useEffect(() => {
-        const accountsArray = Array.from(accounts.entries());
-        if (accountsArray.length > 0) {
-            const [id, details] = accountsArray[0];
-            setUserId(id);
-            setUserName(details.name);
-        }
-    }, [accounts]);
+  // Set user info from accounts context
+  useEffect(() => {
+    const accountsArray = Array.from(accounts.entries());
+    if (accountsArray.length > 0) {
+      const [id, details] = accountsArray[0];
+      setUserId(id);
+      setUserName(details.name);
+    }
+  }, [accounts]);
 
     const fetchUserTrophies = async () => {
         try {
@@ -73,15 +73,15 @@ export const Marketplace: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        const getUserTrophies = async () => {
-            if (userId) {
-                const trophies = await fetchUserTrophies();
-                setUserTrophies(trophies);
-            }
-        };
-        getUserTrophies();
-    }, [userId]);
+  useEffect(() => {
+    const getUserTrophies = async () => {
+      if (userId) {
+        const trophies = await fetchUserTrophies();
+        setUserTrophies(trophies);
+      }
+    };
+    getUserTrophies();
+  }, [userId]);
 
     async function createTokenFireWindIce(
         carsCollectionId: number,

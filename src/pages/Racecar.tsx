@@ -33,8 +33,7 @@ export const RacecarPage = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [counter, setCounter] = useState(0);
 
-  const readOnlyText = "TEST test TEST";
-
+  const readOnlyText = gameState?.prompt || "Type this text to win!";
   // connect to our server
   useEffect(() => {
     const accountsArray = Array.from(accounts.entries());
@@ -120,6 +119,21 @@ export const RacecarPage = () => {
     console.log("Incrementing winner token for owner:", owner);
     incrementWinnerToken(3416, 3419, owner);
   };
+
+  const getStyledText = () => {
+    return readOnlyText.split("").map((char, index) => {
+      const isCorrect = inputText[index] === char;
+      return (
+        <span
+          key={index}
+          className={isCorrect ? "correct-char" : "incorrect-char"}
+        >
+          {char}
+        </span>
+      );
+    });
+  };
+
   useEffect(() => {
     if (gameState && gameState.winner) {
     }
@@ -128,7 +142,7 @@ export const RacecarPage = () => {
   // console.log("Game State", gameState);
   // console.log("Game State", gameState?.players);
   return (
-    <div>
+    <div className="game-container">
       <div className="title-container">
         <img
           src="/polkaTypeRacer.png"
@@ -136,7 +150,7 @@ export const RacecarPage = () => {
           className="racecar-image"
           style={{ width: "250px", height: "250px" }}
         />
-        <h1>Racecar Game</h1>
+        <h1>Polka Type Race</h1>
       </div>
       {gameState && gameState.winner && (
         <div className="winner-notification">
@@ -198,6 +212,7 @@ export const RacecarPage = () => {
             className="textbox"
             style={{ whiteSpace: "pre-wrap" }}
           />
+          <div className="textbox">{getStyledText()}</div>
           <input
             type="text"
             placeholder="Enter text here"
@@ -208,7 +223,10 @@ export const RacecarPage = () => {
           />
         </div>
       )}
-      <Link to="/">Go back to Accounts</Link> {/* Add the Link component */}
+      <Link style={{ color: "#fff" }} to="/">
+        Go back to Accounts
+      </Link>{" "}
+      {/* Add the Link component */}
     </div>
   );
 };
