@@ -40,6 +40,7 @@ The Racecar Typing Game is an interactive and competitive typing game where play
 - **RacecarPage**: The main component that renders the game interface and handles the game logic.
 - **AccountsContext**: Provides account-related information and functions.
 - **PartySocket**: Manages the WebSocket connection to the server for real-time updates.
+- **MarketPlace**: Buy with your trophies, powerups
 
 ### Key Functions
 
