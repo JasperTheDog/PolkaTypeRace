@@ -6,6 +6,7 @@ import {
   AccountsContextProvider,
   AccountsContext,
 } from "../accounts/AccountsContext";
+import { incrementWinnerToken } from "../accounts/AccountsContext";
 
 interface Player {
   progress: number;
@@ -104,11 +105,13 @@ export const RacecarPage = () => {
       const resetProgress = [0, 0, 0, 0];
       setProgress(resetProgress);
       localStorage.setItem("progress", JSON.stringify(resetProgress));
+      console.log("Winner", `Player ${index + 1}`);
+      incrementWinnerToken(3231, 3277, userId);
     }
   };
 
-  console.log("Game State", gameState);
-  console.log("Game State", gameState?.players);
+  // console.log("Game State", gameState);
+  // console.log("Game State", gameState?.players);
   return (
     <div>
       {gameState && gameState.winner && (

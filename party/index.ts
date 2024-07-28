@@ -1,4 +1,5 @@
 import type * as Party from "partykit/server";
+import { incrementWinnerToken } from "../src/accounts/AccountsContext";
 
 interface GameState {
   phase: "waiting" | "playing" | "over";
@@ -47,6 +48,9 @@ export default class Server implements Party.Server {
 
       // If the player's progress has reached 100, the game is over
       if (player.progress === 100) {
+        console.log(`Player ${playerId} has won!`);
+        // Increment the winner's score
+        //incrementWinnerToken(3231, 3277, playerId);
         // Set the game state to over
         this.gameState.phase = "over";
 

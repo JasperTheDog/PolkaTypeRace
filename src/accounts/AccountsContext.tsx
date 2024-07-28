@@ -30,7 +30,7 @@ export const AccountsContext = createContext<AccountsContextValue>({
   fetchLocalAccounts: noop,
 });
 
-async function incrementWinnerToken(
+export async function incrementWinnerToken(
   carsCollectionId: number,
   achievementsCollectionId: number,
   owner: string,
@@ -225,8 +225,6 @@ export const AccountsContextProvider = ({ children }: PropsWithChildren) => {
         // Create a new NFT for the account
         console.log(`Creating NFT for ${name} with address ${account.address}`);
         await createToken(3231, account.address, name);
-        //play(3231, 3183, 2, 3);
-        incrementWinnerToken(3231, 3277, account.address);
       }
     }
     console.log("Displaying polkadot accounts");
