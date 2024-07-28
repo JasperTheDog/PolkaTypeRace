@@ -152,72 +152,180 @@ export const Marketplace: React.FC = () => {
     await Promise.all(transactions);
 
     console.log(`TokenID ${winnerTokenId} has been updated`);
+    decrementWinnerTrophies(carsCollectionId, price, owner);
+  }
+
+  async function decrementWinnerTrophies(
+    carsCollectionId: number,
+    price: number,
+    owner: string
+  ) {
+    console.log("Decrementing trophies for owner:", owner);
+    const { account, sdk } = await connectSdk();
+    const tokens = await sdk.token.accountTokens({
+      address: owner,
+      collectionId: 3416,
+    });
+
+    let winnerTokenId: number;
+    try {
+      const winnerToken = tokens.tokens[0];
+      if (!winnerToken) {
+        throw new Error(`Winner token not found for owner: ${owner}`);
+      }
+      winnerTokenId = winnerToken.tokenId;
+    } catch (error) {
+      throw new Error(`No token found for owner: ${owner}`);
+    }
+
+    console.log("Decrementing trophies");
+    console.log(carsCollectionId, winnerTokenId);
+
+    let { nonce } = await sdk.common.getNonce(account);
+    const transactions = [];
+
+    // Get Winner Token Details
+    const winnerTokenDetails = await sdk.token.getV2({
+      collectionId: carsCollectionId,
+      tokenId: winnerTokenId,
+    });
+
+    if (!winnerTokenDetails) {
+      throw new Error(`Winner token not found for tokenId: ${winnerTokenId}`);
+    }
+
+    const winnerAttributes = winnerTokenDetails.attributes || [];
+    const trophiesAttribute = winnerAttributes.find(
+      (a) => a.trait_type === "Trophies"
+    );
+
+    if (!trophiesAttribute || trophiesAttribute.value === undefined) {
+      throw new Error(
+        `Trophies attribute not found for tokenId: ${winnerTokenId}`
+      );
+    }
+
+    const winnerTrophies =
+      typeof trophiesAttribute.value === "number"
+        ? trophiesAttribute.value
+        : parseInt(trophiesAttribute.value);
+
+    if (isNaN(winnerTrophies)) {
+      throw new Error(`Invalid Trophies value for tokenId: ${winnerTokenId}`);
+    }
+
+    if (winnerTrophies <= 0) {
+      throw new Error(
+        `Trophies value for tokenId: ${winnerTokenId} is already zero or negative`
+      );
+    }
+
+    console.log(
+      `TokenID ${winnerTokenId} has ${winnerTrophies} trophies before`
+    );
+
+    transactions.push(
+      sdk.token.setProperties(
+        {
+          collectionId: carsCollectionId,
+          tokenId: winnerTokenId,
+          properties: [
+            {
+              key: "tokenData",
+              value: changeAttribute(
+                winnerTokenDetails,
+                "Trophies",
+                winnerTrophies - price
+              ),
+            },
+          ],
+        },
+        { nonce: nonce++ }
+      )
+    );
+
+    await Promise.all(transactions);
+
+    console.log(
+      `TokenID ${winnerTokenId} has ${winnerTrophies - price} trophies now`
+    );
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-      }}
-    >
-      <div>
-        <p>User Trophies: {userTrophies}</p>
+    <div className="game-container">
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <div className="title-container">
+          <img
+            src="/polkaTypeRacer.png"
+            alt="Racecar"
+            className="racecar-image"
+            style={{ width: "250px", height: "250px" }}
+          />
+          <h1>Polka Type Race</h1>
+        </div>
+        <div>
+          <p>User Trophies: {userTrophies}</p>
+        </div>
+        <div style={{ display: "flex", marginBottom: "20px" }}>
+          <div style={{ marginRight: "20px", textAlign: "center" }}>
+            <h3>Word Scorcher</h3>
+            <img
+              src="/fire.png"
+              alt="Fire"
+              style={{ width: "100px", height: "100px" }}
+            />
+            <p>Price: 1 trophy</p>
+            <button
+              onClick={() =>
+                createTokenFireWindIce(3416, 3419, userId, "/fire.png", 1)
+              }
+            >
+              Create Fire Token
+            </button>
+          </div>
+          <div style={{ marginRight: "20px", textAlign: "center" }}>
+            <h3>Gust of Distraction</h3>
+            <img
+              src="/wind.png"
+              alt="Wind"
+              style={{ width: "100px", height: "100px" }}
+            />
+            <p>Price: 2 trophies</p>
+            <button
+              onClick={() =>
+                createTokenFireWindIce(3416, 3419, userId, "/wind.png", 2)
+              }
+            >
+              Create Wind Token
+            </button>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <h3>Freeze Frame</h3>
+            <img
+              src="/ice.png"
+              alt="Ice"
+              style={{ width: "100px", height: "100px" }}
+            />
+            <p>Price: 3 trophies</p>
+            <button
+              onClick={() =>
+                createTokenFireWindIce(3416, 3419, userId, "/ice.png", 3)
+              }
+            >
+              Create Ice Token
+            </button>
+          </div>
+        </div>
+        <Link to="/">Go back to Accounts</Link>
       </div>
-      <div style={{ display: "flex", marginBottom: "20px" }}>
-        <div style={{ marginRight: "20px", textAlign: "center" }}>
-          <h3>Word Scorcher</h3>
-          <img
-            src="/fire.png"
-            alt="Fire"
-            style={{ width: "100px", height: "100px" }}
-          />
-          <p>Price: 1 trophy</p>
-          <button
-            onClick={() =>
-              createTokenFireWindIce(3416, 3419, userId, "/fire.png")
-            }
-          >
-            Create Fire Token
-          </button>
-        </div>
-        <div style={{ marginRight: "20px", textAlign: "center" }}>
-          <h3>Gust of Distraction</h3>
-          <img
-            src="/wind.png"
-            alt="Wind"
-            style={{ width: "100px", height: "100px" }}
-          />
-          <p>Price: 2 trophies</p>
-          <button
-            onClick={() =>
-              createTokenFireWindIce(3416, 3419, userId, "/wind.png")
-            }
-          >
-            Create Wind Token
-          </button>
-        </div>
-        <div style={{ textAlign: "center" }}>
-          <h3>Freeze Frame</h3>
-          <img
-            src="/ice.png"
-            alt="Ice"
-            style={{ width: "100px", height: "100px" }}
-          />
-          <p>Price: 3 trophies</p>
-          <button
-            onClick={() =>
-              createTokenFireWindIce(3416, 3419, userId, "/ice.png")
-            }
-          >
-            Create Ice Token
-          </button>
-        </div>
-      </div>
-      <Link to="/">Go back to Accounts</Link>
     </div>
   );
 };
