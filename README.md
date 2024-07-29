@@ -1,4 +1,4 @@
-# PolkaTypeRace
+# PolkaTypeRace - 3rd Place at EasyA x Polkadot Harvard Hackathon
 
 <!-- Add image in /public/polkaTypeRacer.png-->
 ![PolkaTypeRace](./public/polkaTypeRacer.png)
